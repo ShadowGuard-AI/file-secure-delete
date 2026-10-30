@@ -15,19 +15,16 @@ pip install file-secure-delete
 ## Usage
 
 ```
-usage: file-secure-delete [-h] [-v] [-n NUM] file1 file2 ...
+usage: main.py [-h] [--passes PASSES] file_path
 
-Securely delete files with multiple overwrites
+Securely delete files by overwriting them multiple times before deletion.
 
 positional arguments:
-  file1                  First file to delete
-  file2                  Second file to delete
-  ...                    Additional files to delete
+  file_path              Path to the file you want to securely delete.
 
-optional arguments:
+options:
   -h, --help             show this help message and exit
-  -v, --verbose          Enable verbose logging
-  -n NUM, --num NUM      Number of overwrites (default: 3)
+  --passes PASSES        Number of overwriting passes to perform (default: 3)
 ```
 
 ## Examples
@@ -35,19 +32,13 @@ optional arguments:
 ### Delete a single file securely
 
 ```
-file-secure-delete myfile.txt
+python main.py myfile.txt
 ```
 
-### Delete multiple files securely
+### Delete a file with 5 overwriting passes
 
 ```
-file-secure-delete file1.txt file2.txt file3.txt
-```
-
-### Delete files with 5 overwrites
-
-```
-file-secure-delete -n 5 myfile.txt
+python main.py --passes 5 myfile.txt
 ```
 
 ## Security Warnings
