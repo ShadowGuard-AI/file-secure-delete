@@ -1,3 +1,5 @@
+![Banner](banner.png)
+
 # file-secure-delete
 
 ## Project Description
