@@ -68,7 +68,18 @@ def securely_delete(file_path, passes, follow_symlink=False):
         with open(file, "r+b") as f:
             for i in range(passes):
                 logging.info(f"Overwriting pass {i + 1}/{passes}")
+                # r+b opens without truncating, and each pass seeks back to zero, so
+                # every pass overwrites the same inode and the same length. The file is
+                # never renamed or shrunk first, so its directory entry keeps the
+                # original name until the unlink below.
                 f.seek(0)
+                # Each pass writes one urandom buffer the size of the whole file, so
+                # memory use equals file size. Fine for documents, a real limit for
+                # multi gigabyte files, and worth knowing before pointing this at one.
+                # The overwrite also only reaches the blocks the filesystem maps to
+                # this file today: on copy-on-write filesystems and SSDs with wear
+                # levelling, the old blocks can survive elsewhere on the device. This
+                # pass raises the cost of recovery; it is not a physical guarantee.
                 f.write(os.urandom(file_size))
                 f.flush()
                 os.fsync(f.fileno())
@@ -76,6 +87,10 @@ def securely_delete(file_path, passes, follow_symlink=False):
             os.fsync(f.fileno())
 
         # Delete the file
+        # The unlink happens only after the last fsync returns. If a pass
+        # raises, the file is left in place, partially overwritten, and the
+        # error propagates: a half wiped file is reported as a failure, never
+        # quietly deleted to hide it.
         file.unlink()
         logging.info(f"File securely deleted: {file}")
 
